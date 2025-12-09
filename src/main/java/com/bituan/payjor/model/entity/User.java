@@ -3,6 +3,7 @@ package com.bituan.payjor.model.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,4 +26,8 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @OneToOne
+    @JoinColumn(name = "wallet_id")
+    private Wallet wallet;
 }
