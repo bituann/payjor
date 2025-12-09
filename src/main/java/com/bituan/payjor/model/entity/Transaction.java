@@ -20,15 +20,15 @@ public class Transaction {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", columnDefinition = "UUID")
     private UUID user;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id")
+    @JoinColumn(name = "wallet_id", columnDefinition = "UUID")
     private Wallet wallet;
 
     @ManyToMany
-    @JoinColumn(name = "recipient_id")
+    @JoinColumn(name = "recipient_id", columnDefinition = "UUID")
     private User recipient;
 
     private TransactionType type;

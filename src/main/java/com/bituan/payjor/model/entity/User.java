@@ -28,6 +28,6 @@ public class User {
     private String email;
 
     @OneToOne
-    @JoinColumn(name = "wallet_id")
+    @JoinColumn(name = "wallet_id", columnDefinition = "UUID")
     private Wallet wallet;
 }

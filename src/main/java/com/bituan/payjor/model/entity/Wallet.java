@@ -27,6 +27,6 @@ public class Wallet {
     private long number;
 
     @OneToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", columnDefinition = "UUID")
     private User owner;
 }
