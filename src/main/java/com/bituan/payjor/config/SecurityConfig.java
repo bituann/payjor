@@ -1,0 +1,35 @@
+package com.bituan.payjor.config;
+
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/", "/auth/google", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, authException) -> {
+                            // prevent Spring from forcing Google login automatically
+                            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        })
+                )
+                .oauth2Login(oauth -> oauth
+                        .loginPage("/auth/google")
+                        .defaultSuccessUrl("/auth/google/callback", true)
+                )
+//                .addFilterAfter(bearerTokenAuthFilter, BasicAuthenticationFilter.class);
+                .build();
+    }
+}
