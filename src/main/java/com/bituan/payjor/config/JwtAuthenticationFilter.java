@@ -29,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             String email;
@@ -36,21 +37,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Jwt jwt = jwtDecoder.decode(token);// verification happens here
                 email = jwt.getSubject();
+
+                // load user from repository
+                User user = userRepository.findByEmail(email).orElse(null);
+                if (user != null) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(user, null); // add authorities later
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
             } catch (JwtException ex) {
                 filterChain.doFilter(request, response);
-                throw new RuntimeException();
+                logger.warn("Invalid or Expired JWT");
             }
-
-            // load user from repository
-            User user = userRepository.findByEmail(email).orElse(null);
-            if (user != null) {
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(user, null); // add authorities later
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-
-            filterChain.doFilter(request, response);
         }
+        filterChain.doFilter(request, response);
     }
 }
 
