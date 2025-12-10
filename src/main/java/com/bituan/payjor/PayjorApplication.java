@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @OpenAPIDefinition(
         servers ={
-                @Server(url = "https://payjor.up.railway.com", description = "A friendly wallet"),
+                @Server(url = "https://payjor.up.railway.app", description = "A friendly wallet"),
         }
                 ,
         info = @Info(
