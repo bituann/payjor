@@ -23,10 +23,10 @@ public class Wallet {
     @Column(scale = 2)
     private double balance;
 
-    @Column(unique = true, length = 10)
+    @Column(unique = true, length = 13)
     private String number;
 
     @OneToOne
-    @JoinColumn(name = "owner_id", columnDefinition = "UUID")
+    @JoinColumn(name = "owner_id", columnDefinition = "UUID", referencedColumnName = "id")
     private User owner;
 }
