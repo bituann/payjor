@@ -26,6 +26,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.OK);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.OK);
+    }
+
 //    @ExceptionHandler(Exception.class) // Catch-all for other exceptions
 //    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 //    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
