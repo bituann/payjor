@@ -6,6 +6,7 @@ import com.bituan.payjor.model.entity.Wallet;
 import com.bituan.payjor.model.enums.TransactionStatus;
 import com.bituan.payjor.model.enums.TransactionType;
 import com.bituan.payjor.model.request.WalletTransferRequest;
+import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.repository.TransactionRepository;
 import com.bituan.payjor.repository.WalletRepository;
@@ -58,6 +59,15 @@ public class WalletServiceImpl implements WalletService{
         return WalletTransferResponse.builder()
                 .status(TransactionStatus.SUCCESS)
                 .message("Transfer completed")
+                .build();
+    }
+
+    @Override
+    public WalletBalanceResponse getBalance() {
+        double balance = UserService.getAuthenticatedUser().getWallet().getBalance();
+
+        return WalletBalanceResponse.builder()
+                .balance(balance)
                 .build();
     }
 }
