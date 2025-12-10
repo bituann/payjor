@@ -15,6 +15,10 @@ public record CustomUserDetails(User user) implements UserDetails {
         return Stream.of(Permission.DEPOSIT, Permission.READ, Permission.TRANSFER).map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())).toList();
     }
 
+    public User getUser() {
+        return user;
+    }
+
     @Override
     public String getPassword() {
         return "";

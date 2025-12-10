@@ -23,16 +23,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
-//                        .requestMatchers(
-//                        "/auth/google",
-//                                "/auth/google/callback",
-//                                "/swagger-ui/**",
-//                                "/swagger-ui/index.html",
-//                                "/v3/api-docs/**",
-//                                "/v3/api-docs/swagger-config"
-//                        ).permitAll()
-//                        .anyRequest().authenticated()
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                        "/auth/google",
+                                "/auth/google/callback",
+                                "/swagger-ui/**",
+                                "/swagger-ui/index.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs/swagger-config"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
