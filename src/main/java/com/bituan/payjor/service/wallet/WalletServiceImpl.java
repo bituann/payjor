@@ -16,9 +16,16 @@ import com.bituan.payjor.repository.TransactionRepository;
 import com.bituan.payjor.repository.WalletRepository;
 import com.bituan.payjor.service.paystack.PayStackService;
 import com.bituan.payjor.service.user.UserService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +36,9 @@ public class WalletServiceImpl implements WalletService{
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
     private final PayStackService payStackService;
+
+    @Value("${paystack.secret-key}")
+    private String secretKey;
 
     @Override
     public WalletTransferResponse transfer(WalletTransferRequest request) {
@@ -145,5 +155,61 @@ public class WalletServiceImpl implements WalletService{
                 .reference(paymentResponse.getData().getReference())
                 .authorizationUrl(paymentResponse.getData().getAuthorization_url())
                 .build();
+    }
+
+    @Override
+    public boolean handleWebHook(String signature, String payload) {
+
+            // Validate Signature
+            if (!isValidSignature(payload, signature)) {
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid signature");
+                return false;
+            }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode webhookEvent = objectMapper.readTree(payload);
+
+            String eventType = webhookEvent.get("event").asText();
+            JsonNode data = webhookEvent.get("data");
+
+            // Handle different event types (e.g., "charge.success", "transfer.success")
+            if (!"charge.success".equals(eventType)) {
+                return false;
+            }
+
+            String reference = data.get("reference").asText();
+
+            Transaction transaction = transactionRepository.findByReference(reference).orElse(null);
+
+            if (transaction == null) {
+                return false;
+            }
+
+            transaction.setStatus(TransactionStatus.SUCCESS);
+
+            transactionRepository.save(transaction);
+
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+
+    private boolean isValidSignature(String payload, String signature) {
+        try {
+            Mac sha512 = Mac.getInstance("HmacSHA512");
+            SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA512");
+            sha512.init(keySpec);
+
+            String hash = HexFormat.of().formatHex(sha512.doFinal(payload.getBytes()));
+
+            return hash.equals(signature);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

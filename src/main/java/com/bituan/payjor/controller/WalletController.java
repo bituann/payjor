@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -66,6 +67,14 @@ public class WalletController {
     public ResponseEntity<ApiResponse<?>> deposit (@RequestBody int amount) {
 
         ApiResponse<WalletDepositResponse> res = new ApiResponse<>(HttpStatus.OK.value(), walletService.deposit(amount));
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/paystack/webhook")
+    public ResponseEntity<ApiResponse<?>> handleWebHook (@RequestHeader("X-Paystack-Signature") String signature, @RequestBody String payload) {
+
+        ApiResponse<Map<String, Boolean>> res = new ApiResponse<>(HttpStatus.OK.value(), Map.of("status", walletService.handleWebHook(signature, payload)));
 
         return ResponseEntity.ok(res);
     }

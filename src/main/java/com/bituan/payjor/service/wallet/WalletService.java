@@ -1,7 +1,6 @@
 package com.bituan.payjor.service.wallet;
 
 import com.bituan.payjor.model.request.WalletTransferRequest;
-import com.bituan.payjor.model.request.paystack.InitPaymentRequest;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
 import com.bituan.payjor.model.response.wallet.WalletDepositResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
@@ -16,4 +15,5 @@ public interface WalletService {
     List<WalletTransactionResponse> getAllTransactions();
     WalletTransactionResponse getTransactionStatus(UUID reference);
     WalletDepositResponse deposit(int amount);
+    boolean handleWebHook(String signature, String payload);
 }
