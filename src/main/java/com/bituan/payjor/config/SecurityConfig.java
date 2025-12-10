@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .loginPage("/auth/google")
                         .defaultSuccessUrl("/auth/google/callback", true)
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
