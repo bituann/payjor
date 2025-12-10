@@ -3,6 +3,7 @@ package com.bituan.payjor.controller;
 import com.bituan.payjor.model.request.WalletTransferRequest;
 import com.bituan.payjor.model.response.ApiResponse;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
+import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.service.wallet.WalletService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/wallet")
@@ -30,6 +33,13 @@ public class WalletController {
     public ResponseEntity<ApiResponse<?>> getBalance () {
 
         ApiResponse<WalletBalanceResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getBalance());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/transactions")
+    public ResponseEntity<ApiResponse<?>> getAllTransactions() {
+
+        ApiResponse<List<WalletTransactionResponse>> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getAllTransactions());
         return ResponseEntity.ok(response);
     }
 }

@@ -7,12 +7,16 @@ import com.bituan.payjor.model.enums.TransactionStatus;
 import com.bituan.payjor.model.enums.TransactionType;
 import com.bituan.payjor.model.request.WalletTransferRequest;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
+import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.repository.TransactionRepository;
 import com.bituan.payjor.repository.WalletRepository;
 import com.bituan.payjor.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -74,5 +78,19 @@ public class WalletServiceImpl implements WalletService{
         return WalletBalanceResponse.builder()
                 .balance(balance)
                 .build();
+    }
+
+    @Override
+    public List<WalletTransactionResponse> getAllTransactions() {
+        User user = UserService.getAuthenticatedUser();
+
+        List<Transaction> transactions = transactionRepository.findByUserIdOrRecipientId(user.getId(), user.getId());
+
+        return transactions.stream().map(transaction -> WalletTransactionResponse.builder()
+                .type(transaction.getType())
+                .amount(transaction.getAmount())
+                .status(transaction.getStatus())
+                .build()
+        ).toList();
     }
 }

@@ -4,6 +4,7 @@ import com.bituan.payjor.model.enums.TransactionStatus;
 import com.bituan.payjor.model.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "transactions")
+@Builder
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,7 +23,7 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "user_id", columnDefinition = "UUID")
-    private UUID user;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "wallet_id", columnDefinition = "UUID")
@@ -30,6 +32,9 @@ public class Transaction {
     @ManyToMany
     @JoinColumn(name = "recipient_id", columnDefinition = "UUID")
     private User recipient;
+
+    @Column(nullable = false)
+    private double amount;
 
     private TransactionType type;
 

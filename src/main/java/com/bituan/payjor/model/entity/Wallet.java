@@ -23,8 +23,8 @@ public class Wallet {
     @Column(scale = 2)
     private double balance;
 
-    @Column(unique = true, precision = 10)
-    private long number;
+    @Column(unique = true, length = 10)
+    private String number;
 
     @OneToOne
     @JoinColumn(name = "owner_id", columnDefinition = "UUID")
