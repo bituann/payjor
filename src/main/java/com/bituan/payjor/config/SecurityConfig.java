@@ -24,6 +24,7 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Configuration
@@ -100,7 +101,7 @@ public class SecurityConfig {
 
         byte[] decoded = Base64.getDecoder().decode(content);
         return (RSAPublicKey) KeyFactory.getInstance("RSA")
-                .generatePublic(new PKCS8EncodedKeySpec(decoded));
+                .generatePublic(new X509EncodedKeySpec(decoded));
     }
 
 
