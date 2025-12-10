@@ -25,6 +25,11 @@ public class WalletServiceImpl implements WalletService{
     public WalletTransferResponse transfer(WalletTransferRequest request) {
         User user = UserService.getAuthenticatedUser();
 
+        // verify amount
+        if (request.getAmount() <= 0) {
+            throw new RuntimeException("Invalid amount");
+        }
+
         // check & verify sufficient balance
         if (user.getWallet().getBalance() < request.getAmount()) {
             throw new RuntimeException("Insufficient Balance");
