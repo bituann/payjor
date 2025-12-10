@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,4 +34,7 @@ public class User {
 
     @Column(columnDefinition = "integer default 0")
     private int activeKeys;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ApiKey> apiKeys = new ArrayList<>();
 }

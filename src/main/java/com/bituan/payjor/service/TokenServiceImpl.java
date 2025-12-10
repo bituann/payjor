@@ -1,11 +1,13 @@
 package com.bituan.payjor.service;
 
+import com.bituan.payjor.exception.BadRequestException;
 import com.bituan.payjor.model.entity.ApiKey;
 import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.model.request.CreateApiKeyRequest;
 import com.bituan.payjor.model.request.RollOverApiKeyRequest;
 import com.bituan.payjor.model.response.apikey.CreateApiKeyResponse;
 import com.bituan.payjor.repository.ApiKeyRepository;
+import com.bituan.payjor.repository.UserRepository;
 import com.bituan.payjor.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +29,7 @@ public class TokenServiceImpl implements TokenService{
     private final JwtEncoder jwtEncoder;
     private final PasswordEncoder passwordEncoder;
     private final ApiKeyRepository apiKeyRepository;
+    private final UserRepository userRepository;
 
     @Override
     public String generateJwtToken(User user) {
@@ -48,12 +51,13 @@ public class TokenServiceImpl implements TokenService{
     public CreateApiKeyResponse createApiKey(CreateApiKeyRequest request) {
         User user = UserService.getAuthenticatedUser();
 
-        if (user.getActiveKeys() > 5) {
-            throw new RuntimeException("A person can only own a maximum of 5 keys");
+        // check if number of active keys are more than 5
+        if (user.getApiKeys().stream().filter(key -> key.getExpiresAt().isAfter(LocalDateTime.now())).count() >= 5) {
+            throw new IllegalStateException("Maximum 5 active API keys allowed");
         }
 
         if (request.getPermissions().isEmpty()) {
-            throw new RuntimeException("Permissions must be set");
+            throw new BadRequestException("Permissions must be set");
         }
 
         // Generate random 32-byte key
@@ -66,7 +70,7 @@ public class TokenServiceImpl implements TokenService{
 
         // calculate expired at
         LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime expiresAt = createdAt;
+        LocalDateTime expiresAt;
 
         expiresAt = getExpiryDate(request.getExpiry());
 
@@ -79,9 +83,11 @@ public class TokenServiceImpl implements TokenService{
                 .expiresAt(expiresAt)
                 .build();
 
-        apiKeyRepository.save(apiKey);
+        user.getApiKeys().add(apiKey);
         
         user.setActiveKeys(user.getActiveKeys() + 1);
+
+        userRepository.save(user);
 
         // Return plaintext key to user (store only hashed version in DB)
         return CreateApiKeyResponse.builder()
@@ -111,8 +117,8 @@ public class TokenServiceImpl implements TokenService{
         LocalDateTime now = LocalDateTime.now();
 
         return switch (expiry) {
+            case "1H" -> now.plusHours(1);
             case "1D" -> now.plusDays(1);
-            case "1W" -> now.plusWeeks(1);
             case "1M" -> now.plusMonths(1);
             case "1Y" -> now.plusYears(1);
             default -> now.plusSeconds(0);
