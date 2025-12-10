@@ -49,6 +49,7 @@ public class WalletServiceImpl implements WalletService{
                 .user(user)
                 .status(TransactionStatus.PENDING)
                 .wallet(user.getWallet())
+                .amount(request.getAmount())
                 .build();
 
         // deduct amount from user
