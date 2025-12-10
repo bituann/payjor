@@ -21,13 +21,12 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", columnDefinition = "UUID")
-    private User user;
+    @Column(unique = true)
+    private String reference;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id", columnDefinition = "UUID")
-    private Wallet wallet;
+    @JoinColumn(name = "user_id", columnDefinition = "UUID")
+    private User sender;
 
     @ManyToOne
     @JoinColumn(name = "recipient_id", columnDefinition = "UUID")

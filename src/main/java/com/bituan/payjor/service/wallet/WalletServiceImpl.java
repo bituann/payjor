@@ -6,11 +6,15 @@ import com.bituan.payjor.model.entity.Wallet;
 import com.bituan.payjor.model.enums.TransactionStatus;
 import com.bituan.payjor.model.enums.TransactionType;
 import com.bituan.payjor.model.request.WalletTransferRequest;
+import com.bituan.payjor.model.request.paystack.InitPaymentRequest;
+import com.bituan.payjor.model.response.paystack.InitPaymentResponse;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
+import com.bituan.payjor.model.response.wallet.WalletDepositResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.repository.TransactionRepository;
 import com.bituan.payjor.repository.WalletRepository;
+import com.bituan.payjor.service.paystack.PayStackService;
 import com.bituan.payjor.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,7 @@ public class WalletServiceImpl implements WalletService{
 
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final PayStackService payStackService;
 
     @Override
     public WalletTransferResponse transfer(WalletTransferRequest request) {
@@ -42,14 +47,17 @@ public class WalletServiceImpl implements WalletService{
         // find recipient wallet
         Wallet recipientWallet = walletRepository.findByNumber(request.getWalletNumber()).orElseThrow(RuntimeException::new);
 
+        // create reference
+        String reference = UUID.randomUUID().toString().replace("-", "");
+
         // create transaction
         Transaction transaction = Transaction.builder()
                 .recipient(recipientWallet.getOwner())
                 .type(TransactionType.TRANSFER)
-                .user(user)
+                .sender(user)
                 .status(TransactionStatus.PENDING)
-                .wallet(user.getWallet())
                 .amount(request.getAmount())
+                .reference(reference)
                 .build();
 
         // deduct amount from user
@@ -103,6 +111,39 @@ public class WalletServiceImpl implements WalletService{
                 .reference(reference)
                 .status(transaction.getStatus())
                 .amount(transaction.getAmount())
+                .build();
+    }
+
+    @Override
+    public WalletDepositResponse deposit(int amount) {
+        // generate reference
+        String reference = UUID.randomUUID().toString().replace("-", "");
+
+        InitPaymentRequest request = InitPaymentRequest.builder()
+                .amount(amount)
+                .email(UserService.getAuthenticatedUser().getEmail())
+                .reference(reference)
+                .build();
+
+        InitPaymentResponse paymentResponse = payStackService.initializePayment(request);
+
+        User user = UserService.getAuthenticatedUser();
+
+        // save pending transaction
+        Transaction transaction = Transaction.builder()
+                .reference(paymentResponse.getData().getReference())
+                .sender(null)
+                .type(TransactionType.DEPOSIT)
+                .status(TransactionStatus.PENDING)
+                .amount(request.getAmount())
+                .recipient(user)
+                .build();
+
+        transactionRepository.save(transaction);
+
+        return WalletDepositResponse.builder()
+                .reference(paymentResponse.getData().getReference())
+                .authorizationUrl(paymentResponse.getData().getAuthorization_url())
                 .build();
     }
 }

@@ -3,6 +3,7 @@ package com.bituan.payjor.controller;
 import com.bituan.payjor.model.request.WalletTransferRequest;
 import com.bituan.payjor.model.response.ApiResponse;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
+import com.bituan.payjor.model.response.wallet.WalletDepositResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.service.wallet.WalletService;
@@ -59,5 +60,13 @@ public class WalletController {
 
         ApiResponse<WalletTransactionResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getTransactionStatus(reference));
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/deposit")
+    public ResponseEntity<ApiResponse<?>> deposit (@RequestBody int amount) {
+
+        ApiResponse<WalletDepositResponse> res = new ApiResponse<>(HttpStatus.OK.value(), walletService.deposit(amount));
+
+        return ResponseEntity.ok(res);
     }
 }
