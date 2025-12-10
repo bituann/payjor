@@ -31,6 +31,10 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/v3/api-docs/swagger-config"
                         ).permitAll()
+                        .requestMatchers("/wallet/deposit").hasRole("DEPOSIT")
+                        .requestMatchers("/wallet/balance").hasRole("READ")
+                        .requestMatchers("/wallet/transactions").hasRole("READ")
+                        .requestMatchers("/wallet/transfer").hasRole("TRANSFER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
