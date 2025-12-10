@@ -13,7 +13,7 @@ public interface WalletService {
     WalletTransferResponse transfer(WalletTransferRequest request);
     WalletBalanceResponse getBalance();
     List<WalletTransactionResponse> getAllTransactions();
-    WalletTransactionResponse getTransactionStatus(UUID reference);
+    WalletTransactionResponse verifyDepositStatus(String reference);
     WalletDepositResponse deposit(int amount);
     boolean handleWebHook(String signature, String payload);
 }

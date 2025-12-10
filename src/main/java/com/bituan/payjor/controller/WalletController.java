@@ -57,9 +57,9 @@ public class WalletController {
     @Operation(
             summary = "Gets the status of a deposit"
     )
-    public ResponseEntity<ApiResponse<?>> getTransactionStatus(@PathVariable UUID reference) {
+    public ResponseEntity<ApiResponse<?>> getTransactionStatus(@PathVariable String reference) {
 
-        ApiResponse<WalletTransactionResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getTransactionStatus(reference));
+        ApiResponse<WalletTransactionResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.verifyDepositStatus(reference));
         return ResponseEntity.ok(response);
     }
 

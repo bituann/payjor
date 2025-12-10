@@ -8,6 +8,7 @@ import com.bituan.payjor.model.enums.TransactionType;
 import com.bituan.payjor.model.request.WalletTransferRequest;
 import com.bituan.payjor.model.request.paystack.InitPaymentRequest;
 import com.bituan.payjor.model.response.paystack.InitPaymentResponse;
+import com.bituan.payjor.model.response.paystack.VerifyPaymentResponse;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
 import com.bituan.payjor.model.response.wallet.WalletDepositResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
@@ -108,19 +109,19 @@ public class WalletServiceImpl implements WalletService{
         return transactions.stream().map(transaction -> WalletTransactionResponse.builder()
                 .type(transaction.getType())
                 .amount(transaction.getAmount())
-                .status(transaction.getStatus())
+                .status(transaction.getStatus().name())
                 .build()
         ).toList();
     }
 
     @Override
-    public WalletTransactionResponse getTransactionStatus(UUID reference) {
-        Transaction transaction = transactionRepository.findById(reference).orElseThrow(RuntimeException::new);
+    public WalletTransactionResponse verifyDepositStatus(String reference) {
+        VerifyPaymentResponse paymentStatus = payStackService.verifyPayment(reference);
 
         return WalletTransactionResponse.builder()
                 .reference(reference)
-                .status(transaction.getStatus())
-                .amount(transaction.getAmount())
+                .status(paymentStatus.getData().getStatus())
+                .amount(paymentStatus.getData().getAmount())
                 .build();
     }
 

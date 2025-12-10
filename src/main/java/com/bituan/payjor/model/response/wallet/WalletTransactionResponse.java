@@ -14,8 +14,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WalletTransactionResponse {
-    private UUID reference;
+    private String reference;
     private TransactionType type;
     private double amount;
-    private TransactionStatus status;
+    private String status;
 }
