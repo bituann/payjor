@@ -29,7 +29,7 @@ public class Transaction {
     @JoinColumn(name = "wallet_id", columnDefinition = "UUID")
     private Wallet wallet;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "recipient_id", columnDefinition = "UUID")
     private User recipient;
 

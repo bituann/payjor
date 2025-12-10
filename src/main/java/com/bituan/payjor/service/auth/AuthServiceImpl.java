@@ -6,7 +6,9 @@ import com.bituan.payjor.repository.UserRepository;
 import com.bituan.payjor.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final TokenService tokenService;
