@@ -15,20 +15,28 @@ public class PayStackServiceImpl implements PayStackService{
 
     @Override
     public InitPaymentResponse initializePayment(InitPaymentRequest request) {
-        return payStackClient.post()
-                .uri("/transaction/initialize")
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(InitPaymentResponse.class)
-                .block();
+        try {
+            return payStackClient.post()
+                    .uri("/transaction/initialize")
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(InitPaymentResponse.class)
+                    .block();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to make payment");
+        }
     }
 
     @Override
     public VerifyPaymentResponse verifyPayment(String reference) {
-        return payStackClient.get()
-                .uri("/transaction/verify/{reference}", reference)
-                .retrieve()
-                .bodyToMono(VerifyPaymentResponse.class)
-                .block();
+        try {
+            return payStackClient.get()
+                    .uri("/transaction/verify/{reference}", reference)
+                    .retrieve()
+                    .bodyToMono(VerifyPaymentResponse.class)
+                    .block();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to verify payment");
+        }
     }
 }

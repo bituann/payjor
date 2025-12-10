@@ -16,6 +16,7 @@ import com.bituan.payjor.model.response.wallet.WalletDepositResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.repository.TransactionRepository;
+import com.bituan.payjor.repository.UserRepository;
 import com.bituan.payjor.repository.WalletRepository;
 import com.bituan.payjor.service.paystack.PayStackService;
 import com.bituan.payjor.service.user.UserService;
@@ -37,6 +38,7 @@ public class WalletServiceImpl implements WalletService{
 
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
     private final PayStackService payStackService;
 
     @Value("${paystack.secret-key}")
@@ -174,11 +176,13 @@ public class WalletServiceImpl implements WalletService{
             String eventType = webhookEvent.get("event").asText();
             JsonNode data = webhookEvent.get("data");
 
+
             // Handle different event types (e.g., "charge.success", "transfer.success")
             if (!"charge.success".equals(eventType)) {
                 return false;
             }
 
+            // update transaction
             String reference = data.get("reference").asText();
 
             Transaction transaction = transactionRepository.findByReference(reference).orElse(null);
@@ -190,6 +194,15 @@ public class WalletServiceImpl implements WalletService{
             transaction.setStatus(TransactionStatus.SUCCESS);
 
             transactionRepository.save(transaction);
+
+            // update wallet balance
+            String email = data.get("email").asText();
+            User user = userRepository.findByEmail(email).orElseThrow();
+            Wallet userWallet = user.getWallet();
+
+            userWallet.setBalance(userWallet.getBalance() + data.get("amount").asDouble());
+
+            userRepository.save(user);
 
             return true;
 
