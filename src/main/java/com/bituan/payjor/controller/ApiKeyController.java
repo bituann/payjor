@@ -5,6 +5,7 @@ import com.bituan.payjor.model.request.RollOverApiKeyRequest;
 import com.bituan.payjor.model.response.ApiResponse;
 import com.bituan.payjor.model.response.apikey.CreateApiKeyResponse;
 import com.bituan.payjor.service.TokenService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class ApiKeyController {
     private final TokenService tokenService;
 
     @PostMapping("/create")
+    @Operation( summary = "Creates an API token" )
     public ResponseEntity<ApiResponse<?>> createApiKey (@RequestBody CreateApiKeyRequest request) {
 
         ApiResponse<CreateApiKeyResponse> res = new ApiResponse<>(HttpStatus.OK.value(), tokenService.createApiKey(request));
@@ -27,6 +29,7 @@ public class ApiKeyController {
     }
 
     @PostMapping("/rollover")
+    @Operation( summary = "Rollover API token" )
     public ResponseEntity<ApiResponse<?>> rollOver (@RequestBody RollOverApiKeyRequest request) {
 
         ApiResponse<CreateApiKeyResponse> res = new ApiResponse<>(HttpStatus.OK.value(), tokenService.rollOverApiKey(request));

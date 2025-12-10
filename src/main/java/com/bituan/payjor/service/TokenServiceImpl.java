@@ -80,6 +80,8 @@ public class TokenServiceImpl implements TokenService{
                 .build();
 
         apiKeyRepository.save(apiKey);
+        
+        user.setActiveKeys(user.getActiveKeys() + 1);
 
         // Return plaintext key to user (store only hashed version in DB)
         return CreateApiKeyResponse.builder()
