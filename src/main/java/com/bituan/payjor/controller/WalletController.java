@@ -6,6 +6,7 @@ import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 import com.bituan.payjor.service.wallet.WalletService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,9 @@ public class WalletController {
     private final WalletService walletService;
 
     @PostMapping("/transfer")
+    @Operation(
+            summary = "Transfer money between users of the app"
+    )
     public ResponseEntity<ApiResponse<?>> transfer (WalletTransferRequest request) {
 
         ApiResponse<WalletTransferResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.transfer(request));
@@ -28,6 +32,9 @@ public class WalletController {
     }
 
     @GetMapping("/balance")
+    @Operation(
+            summary = "Get user balance"
+    )
     public ResponseEntity<ApiResponse<?>> getBalance () {
 
         ApiResponse<WalletBalanceResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getBalance());
@@ -35,6 +42,9 @@ public class WalletController {
     }
 
     @GetMapping("/transactions")
+    @Operation(
+            summary = "Gets all user transactions"
+    )
     public ResponseEntity<ApiResponse<?>> getAllTransactions() {
 
         ApiResponse<List<WalletTransactionResponse>> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getAllTransactions());
@@ -42,6 +52,9 @@ public class WalletController {
     }
 
     @GetMapping("/deposit/{reference}/status")
+    @Operation(
+            summary = "Gets the status of a deposit"
+    )
     public ResponseEntity<ApiResponse<?>> getTransactionStatus(@PathVariable UUID reference) {
 
         ApiResponse<WalletTransactionResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getTransactionStatus(reference));
