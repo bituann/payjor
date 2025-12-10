@@ -30,4 +30,7 @@ public class User {
     @OneToOne
     @JoinColumn(name = "wallet_id", columnDefinition = "UUID")
     private Wallet wallet;
+
+    @Column(columnDefinition = "integer default 0")
+    private int activeKeys;
 }

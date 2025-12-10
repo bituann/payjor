@@ -28,6 +28,9 @@ public class ApiKey {
     private String key;
 
     @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
     private LocalDateTime expiresAt;
 
     private List<Permission> permissions;

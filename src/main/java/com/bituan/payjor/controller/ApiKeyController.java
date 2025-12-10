@@ -1,6 +1,7 @@
 package com.bituan.payjor.controller;
 
 import com.bituan.payjor.model.request.CreateApiKeyRequest;
+import com.bituan.payjor.model.request.RollOverApiKeyRequest;
 import com.bituan.payjor.model.response.ApiResponse;
 import com.bituan.payjor.model.response.apikey.CreateApiKeyResponse;
 import com.bituan.payjor.service.TokenService;
@@ -22,6 +23,13 @@ public class ApiKeyController {
     public ResponseEntity<ApiResponse<?>> createApiKey (@RequestBody CreateApiKeyRequest request) {
 
         ApiResponse<CreateApiKeyResponse> res = new ApiResponse<>(HttpStatus.OK.value(), tokenService.createApiKey(request));
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/rollover")
+    public ResponseEntity<ApiResponse<?>> rollOver (@RequestBody RollOverApiKeyRequest request) {
+
+        ApiResponse<CreateApiKeyResponse> res = new ApiResponse<>(HttpStatus.OK.value(), tokenService.rollOverApiKey(request));
         return ResponseEntity.ok(res);
     }
 }

@@ -3,6 +3,7 @@ package com.bituan.payjor.service;
 import com.bituan.payjor.model.entity.ApiKey;
 import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.model.request.CreateApiKeyRequest;
+import com.bituan.payjor.model.request.RollOverApiKeyRequest;
 import com.bituan.payjor.model.response.apikey.CreateApiKeyResponse;
 import com.bituan.payjor.repository.ApiKeyRepository;
 import com.bituan.payjor.service.user.UserService;
@@ -67,13 +68,7 @@ public class TokenServiceImpl implements TokenService{
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime expiresAt = createdAt;
 
-        expiresAt = switch (request.getExpiry()) {
-            case "1D" -> createdAt.plusDays(1);
-            case "1W" -> createdAt.plusWeeks(1);
-            case "1M" -> createdAt.plusMonths(1);
-            case "1Y" -> createdAt.plusYears(1);
-            default -> expiresAt;
-        };
+        expiresAt = getExpiryDate(request.getExpiry());
 
         ApiKey apiKey = ApiKey.builder()
                 .name(request.getName())
@@ -92,4 +87,35 @@ public class TokenServiceImpl implements TokenService{
                 .expiresAt(expiresAt)
                 .build();
     }
+
+    @Override
+    public CreateApiKeyResponse rollOverApiKey(RollOverApiKeyRequest request) {
+        ApiKey apiKey = apiKeyRepository.findById(request.getExpiredKeyId()).orElseThrow(RuntimeException::new);
+
+        if (apiKey.getExpiresAt().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("You cannot rollover this key");
+        }
+
+        CreateApiKeyRequest req = CreateApiKeyRequest.builder()
+                .name(apiKey.getName())
+                .permissions(apiKey.getPermissions())
+                .expiry(request.getExpiry())
+                .build();
+
+        return createApiKey(req);
+    }
+
+    private LocalDateTime getExpiryDate(String expiry) {
+        LocalDateTime now = LocalDateTime.now();
+
+        return switch (expiry) {
+            case "1D" -> now.plusDays(1);
+            case "1W" -> now.plusWeeks(1);
+            case "1M" -> now.plusMonths(1);
+            case "1Y" -> now.plusYears(1);
+            default -> now.plusSeconds(0);
+        };
+    }
+
+
 }
