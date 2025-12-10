@@ -22,20 +22,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(
-                                "/auth/**",
-                                "/oauth2/**",
-                                "/login/**",
-                                "/login/oauth2/**",
-                                "/swagger-ui/**"
+                        "/auth/google",
+                                "/auth/google/callback",
+                                "/swagger-ui/**",
+                                "/swagger-ui/index.html"
                         ).permitAll()
                         .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2Login(oauth -> oauth
-                        .loginPage("/auth/google")
-                        .defaultSuccessUrl("/auth/google/callback", true)
                 )
                 .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
