@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -93,5 +94,16 @@ public class WalletServiceImpl implements WalletService{
                 .status(transaction.getStatus())
                 .build()
         ).toList();
+    }
+
+    @Override
+    public WalletTransactionResponse getTransactionStatus(UUID reference) {
+        Transaction transaction = transactionRepository.findById(reference).orElseThrow(RuntimeException::new);
+
+        return WalletTransactionResponse.builder()
+                .reference(reference)
+                .status(transaction.getStatus())
+                .amount(transaction.getAmount())
+                .build();
     }
 }

@@ -6,9 +6,11 @@ import com.bituan.payjor.model.response.wallet.WalletTransactionResponse;
 import com.bituan.payjor.model.response.wallet.WalletTransferResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface WalletService {
     WalletTransferResponse transfer(WalletTransferRequest request);
     WalletBalanceResponse getBalance();
     List<WalletTransactionResponse> getAllTransactions();
+    WalletTransactionResponse getTransactionStatus(UUID reference);
 }

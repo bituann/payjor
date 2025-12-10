@@ -9,12 +9,10 @@ import com.bituan.payjor.service.wallet.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/wallet")
@@ -40,6 +38,13 @@ public class WalletController {
     public ResponseEntity<ApiResponse<?>> getAllTransactions() {
 
         ApiResponse<List<WalletTransactionResponse>> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getAllTransactions());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/deposit/{reference}/status")
+    public ResponseEntity<ApiResponse<?>> getTransactionStatus(@PathVariable UUID reference) {
+
+        ApiResponse<WalletTransactionResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.getTransactionStatus(reference));
         return ResponseEntity.ok(response);
     }
 }
