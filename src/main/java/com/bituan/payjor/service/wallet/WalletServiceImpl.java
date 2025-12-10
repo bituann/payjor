@@ -1,6 +1,7 @@
 package com.bituan.payjor.service.wallet;
 
 import com.bituan.payjor.exception.BadRequestException;
+import com.bituan.payjor.exception.InsufficientBalanceException;
 import com.bituan.payjor.model.entity.Transaction;
 import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.model.entity.Wallet;
@@ -47,12 +48,12 @@ public class WalletServiceImpl implements WalletService{
 
         // verify amount
         if (request.getAmount() <= 0) {
-            throw new RuntimeException("Invalid amount");
+            throw new BadRequestException("Invalid amount");
         }
 
         // check & verify sufficient balance
         if (user.getWallet().getBalance() < request.getAmount()) {
-            throw new RuntimeException("Insufficient Balance");
+            throw new InsufficientBalanceException("Insufficient Balance");
         }
 
         // find recipient wallet
@@ -127,6 +128,8 @@ public class WalletServiceImpl implements WalletService{
 
     @Override
     public WalletDepositResponse deposit(int amount) {
+        User user = UserService.getAuthenticatedUser();
+
         // generate reference
         String reference = UUID.randomUUID().toString().replace("-", "");
 
@@ -137,8 +140,6 @@ public class WalletServiceImpl implements WalletService{
                 .build();
 
         InitPaymentResponse paymentResponse = payStackService.initializePayment(request);
-
-        User user = UserService.getAuthenticatedUser();
 
         // save pending transaction
         Transaction transaction = Transaction.builder()
