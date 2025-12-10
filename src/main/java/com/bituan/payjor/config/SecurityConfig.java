@@ -87,7 +87,7 @@ public class SecurityConfig {
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
 
-        byte[] decoded = Base64.getDecoder().decode(pem);
+        byte[] decoded = Base64.getDecoder().decode(content);
         return (RSAPrivateKey) KeyFactory.getInstance("RSA")
                 .generatePrivate(new PKCS8EncodedKeySpec(decoded));
     }
@@ -98,7 +98,7 @@ public class SecurityConfig {
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
 
-        byte[] decoded = Base64.getDecoder().decode(pem);
+        byte[] decoded = Base64.getDecoder().decode(content);
         return (RSAPublicKey) KeyFactory.getInstance("RSA")
                 .generatePublic(new PKCS8EncodedKeySpec(decoded));
     }
