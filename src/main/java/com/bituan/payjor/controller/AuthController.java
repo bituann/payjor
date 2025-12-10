@@ -3,40 +3,44 @@ package com.bituan.payjor.controller;
 import com.bituan.payjor.model.response.ApiResponse;
 import com.bituan.payjor.model.response.auth.AuthResponse;
 import com.bituan.payjor.service.auth.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @GetMapping("/google")
-    public void initiateGoogleSignIn(HttpServletResponse response) {
-        try {
-            response.sendRedirect("/oauth2/authorization/google");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    @Operation(
+            summary = "Initiate Google Signin"
+    )
+    public ResponseEntity<ApiResponse<?>> initiateGoogleSignIn(HttpServletResponse response) {
+
+        ApiResponse<Map<String, String>> res = new ApiResponse<>(HttpStatus.OK.value(), Map.of("authorization_url", authService.initiateGoogleOAuth()));
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/google/callback")
-    public ResponseEntity<ApiResponse<AuthResponse>> completeSignIn(@AuthenticationPrincipal OidcUser user) {
+    @Operation(
+            summary = "Callback to authenticates the user"
+    )
+    public ResponseEntity<ApiResponse<AuthResponse>> completeSignIn(@RequestParam("code") String code) {
 
-        ApiResponse<AuthResponse> response = new ApiResponse<>(HttpStatus.OK.value(), authService.signIn(user));
+        ApiResponse<AuthResponse> response = new ApiResponse<>(HttpStatus.OK.value(), authService.signIn(code));
 
         return ResponseEntity.ok(response);
     }
