@@ -1,6 +1,7 @@
 package com.bituan.payjor.config;
 
 import com.bituan.payjor.model.entity.ApiKey;
+import com.bituan.payjor.model.entity.CustomUserDetails;
 import com.bituan.payjor.repository.ApiKeyRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,10 +40,10 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
                 // Build Authentication object
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                apiKey.getOwner(),
+                                new CustomUserDetails(apiKey.getOwner()),
                                 null,
                                 apiKey.getPermissions().stream()
-                                        .map(permission -> new SimpleGrantedAuthority(permission.name()))
+                                        .map(permission -> new SimpleGrantedAuthority("ROLE_" + permission.name()))
                                         .toList()
                         );
 
