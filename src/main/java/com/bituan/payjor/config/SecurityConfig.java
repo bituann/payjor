@@ -94,8 +94,8 @@ public class SecurityConfig {
 
     private RSAPublicKey loadPublicKey(String pem) throws Exception {
         String content = pem
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s+", "");
 
         byte[] decoded = Base64.getDecoder().decode(content);
