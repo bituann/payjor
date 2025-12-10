@@ -1,5 +1,6 @@
 package com.bituan.payjor.config;
 
+import com.bituan.payjor.model.entity.CustomUserDetails;
 import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -9,9 +10,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -41,8 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // load user from repository
                 User user = userRepository.findByEmail(email).orElse(null);
                 if (user != null) {
+                    UserDetails userDetails = new CustomUserDetails(user);
+
                     UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(user, null); // add authorities later
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (JwtException ex) {
