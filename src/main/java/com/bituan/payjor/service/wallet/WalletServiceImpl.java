@@ -1,5 +1,6 @@
 package com.bituan.payjor.service.wallet;
 
+import com.bituan.payjor.exception.BadRequestException;
 import com.bituan.payjor.model.entity.Transaction;
 import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.model.entity.Wallet;
@@ -20,7 +21,6 @@ import com.bituan.payjor.service.user.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -104,7 +104,7 @@ public class WalletServiceImpl implements WalletService{
     public List<WalletTransactionResponse> getAllTransactions() {
         User user = UserService.getAuthenticatedUser();
 
-        List<Transaction> transactions = transactionRepository.findByUserIdOrRecipientId(user.getId(), user.getId());
+        List<Transaction> transactions = transactionRepository.findBySenderOrRecipient(user, user);
 
         return transactions.stream().map(transaction -> WalletTransactionResponse.builder()
                 .type(transaction.getType())
@@ -161,11 +161,10 @@ public class WalletServiceImpl implements WalletService{
     @Override
     public boolean handleWebHook(String signature, String payload) {
 
-            // Validate Signature
-            if (!isValidSignature(payload, signature)) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid signature");
-                return false;
-            }
+        // Validate Signature
+        if (!isValidSignature(payload, signature)) {
+            throw new BadRequestException("Invalid signature");
+        }
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
