@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Jwt jwt = jwtDecoder.decode(token);// verification happens here
                 email = jwt.getSubject();
             } catch (JwtException ex) {
+                filterChain.doFilter(request, response);
                 throw new RuntimeException();
             }
 
