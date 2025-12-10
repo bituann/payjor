@@ -27,7 +27,7 @@ public class TokenServiceImpl implements TokenService{
                 .subject(user.getEmail())
                 .issuedAt(now)
                 .expiresAt(expiryDate)
-                .claim("userId", user.getId().toString())
+                .claim("userGoogleId", user.getGoogleUserId())
                 .claim("fullName", user.getFullName())
                 .build();
 
