@@ -1,5 +1,6 @@
 package com.bituan.payjor.controller;
 
+import com.bituan.payjor.model.request.WalletDepositRequest;
 import com.bituan.payjor.model.request.WalletTransferRequest;
 import com.bituan.payjor.model.response.ApiResponse;
 import com.bituan.payjor.model.response.wallet.WalletBalanceResponse;
@@ -27,7 +28,7 @@ public class WalletController {
     @Operation(
             summary = "Transfer money between users of the app"
     )
-    public ResponseEntity<ApiResponse<?>> transfer (WalletTransferRequest request) {
+    public ResponseEntity<ApiResponse<?>> transfer (@RequestBody WalletTransferRequest request) {
 
         ApiResponse<WalletTransferResponse> response = new ApiResponse<>(HttpStatus.OK.value(), walletService.transfer(request));
         return ResponseEntity.ok(response);
@@ -64,9 +65,9 @@ public class WalletController {
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<ApiResponse<?>> deposit (@RequestBody int amount) {
+    public ResponseEntity<ApiResponse<?>> deposit (@RequestBody WalletDepositRequest request) {
 
-        ApiResponse<WalletDepositResponse> res = new ApiResponse<>(HttpStatus.OK.value(), walletService.deposit(amount));
+        ApiResponse<WalletDepositResponse> res = new ApiResponse<>(HttpStatus.OK.value(), walletService.deposit(request.getAmount()));
 
         return ResponseEntity.ok(res);
     }

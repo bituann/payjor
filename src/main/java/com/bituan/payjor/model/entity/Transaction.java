@@ -34,7 +34,7 @@ public class Transaction {
     private User recipient;
 
     @Column(nullable = false)
-    private double amount;
+    private int amount;
 
     private TransactionType type;
 
