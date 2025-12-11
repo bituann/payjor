@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .requestMatchers(
                         "/auth/google",
                                 "/auth/google/callback",
+                                "/wallet/paystack/webhook",
                                 "/swagger-ui/**",
                                 "/swagger-ui/index.html",
                                 "/v3/api-docs/**",
