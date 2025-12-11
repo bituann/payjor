@@ -1,8 +1,11 @@
 package com.bituan.payjor.config;
 
+import com.bituan.payjor.exception.UnauthorizedException;
 import com.bituan.payjor.model.entity.ApiKey;
 import com.bituan.payjor.model.entity.CustomUserDetails;
+import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.repository.ApiKeyRepository;
+import com.bituan.payjor.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Component
@@ -25,6 +29,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
     private final ApiKeyRepository apiKeyRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -44,6 +49,14 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
         if (matchedKey.isPresent()) {
             ApiKey apiKey = matchedKey.get();
+
+            if (apiKey.getExpiresAt().isBefore(LocalDateTime.now())) {
+                User user = userRepository.findByEmail(apiKey.getOwner().getEmail()).orElseThrow(() -> new UnauthorizedException(""));
+                user.setActiveKeys(user.getActiveKeys() - 1);
+                userRepository.save(user);
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             CustomUserDetails userDetails = new CustomUserDetails(apiKey.getOwner());
 
