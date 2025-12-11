@@ -31,7 +31,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
                         name = "bearerAuth"
                 ),
                 @SecurityRequirement(
-                        name = "X-API-KEY"
+                        name = "ApiKeyAuth"
                 )
         }
 )
