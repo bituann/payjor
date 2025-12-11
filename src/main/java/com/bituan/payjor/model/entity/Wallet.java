@@ -26,7 +26,6 @@ public class Wallet {
     @Column(unique = true, length = 13)
     private String number;
 
-    @OneToOne
-    @JoinColumn(name = "owner_id", columnDefinition = "UUID", referencedColumnName = "id")
+    @OneToOne(mappedBy = "wallet", cascade = CascadeType.ALL)
     private User owner;
 }
