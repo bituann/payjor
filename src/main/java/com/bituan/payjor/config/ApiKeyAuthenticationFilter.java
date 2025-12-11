@@ -37,7 +37,10 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        Optional<ApiKey> matchedKey = apiKeyRepository.findByKey(passwordEncoder.encode(apiKeyHeader));
+        Optional<ApiKey> matchedKey = apiKeyRepository.findAll().stream()
+                .filter(k -> passwordEncoder.matches(apiKeyHeader, k.getKey()))
+                .findFirst();
+
 
         if (matchedKey.isPresent()) {
             ApiKey apiKey = matchedKey.get();
