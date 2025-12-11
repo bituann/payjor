@@ -34,7 +34,4 @@ public class User {
 
     @Column(columnDefinition = "integer default 0")
     private int activeKeys;
-
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ApiKey> apiKeys = new ArrayList<>();
 }
