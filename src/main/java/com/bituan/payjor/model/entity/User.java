@@ -29,8 +29,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @OneToOne
-    @JoinColumn(name = "owner_id", columnDefinition = "UUID", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "owner_id", columnDefinition = "UUID")
     private Wallet wallet;
 
     @Column(columnDefinition = "integer default 0")

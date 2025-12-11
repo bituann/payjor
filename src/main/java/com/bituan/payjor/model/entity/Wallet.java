@@ -26,6 +26,6 @@ public class Wallet {
     @Column(unique = true, length = 13)
     private String number;
 
-    @OneToOne(mappedBy = "wallet", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "wallet")
     private User owner;
 }
