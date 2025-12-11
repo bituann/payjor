@@ -174,12 +174,10 @@ public class WalletServiceImpl implements WalletService{
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode webhookEvent = objectMapper.readTree(payload);
 
-            String eventType = webhookEvent.get("event").asText();
-            JsonNode data = webhookEvent.get("data");
+            String eventType = webhookEvent.path("event").asText(null);
+            JsonNode data = webhookEvent.path("data");
 
-
-            // Handle different event types (e.g., "charge.success", "transfer.success")
-            if (!"charge.success".equals(eventType)) {
+            if (eventType == null) {
                 return false;
             }
 
@@ -188,7 +186,13 @@ public class WalletServiceImpl implements WalletService{
 
             Transaction transaction = transactionRepository.findByReference(reference).orElse(null);
 
-            if (transaction == null) {
+            if (transaction == null || !(transaction.getStatus() == TransactionStatus.PENDING)) {
+                return false;
+            }
+
+            // Handle different event types (e.g., "charge.success", "transfer.success")
+            if ("charge.failed".equalsIgnoreCase(eventType)) {
+                transaction.setStatus(TransactionStatus.FAILED);
                 return false;
             }
 
@@ -197,8 +201,9 @@ public class WalletServiceImpl implements WalletService{
             transactionRepository.save(transaction);
 
             // update wallet balance
-            String email = data.get("customer").get("email").asText();
-            User user = userRepository.findByEmail(email).orElseThrow();
+            String email = data.path("customer").path("email").asText(null);
+            User user = userRepository.findByEmail(email).orElseThrow( () -> new BadRequestException("Unable to process payment. Bad request"));
+
             Wallet userWallet = user.getWallet();
 
             userWallet.setBalance(userWallet.getBalance() + data.get("amount").asDouble());
