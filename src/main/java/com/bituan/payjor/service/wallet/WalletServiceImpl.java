@@ -251,7 +251,7 @@ public class WalletServiceImpl implements WalletService{
 
             userWallet.setBalance(userWallet.getBalance() + data.get("amount").asInt());
 
-            userRepository.save(user);
+            walletRepository.save(userWallet);
 
             return true;
 
