@@ -46,7 +46,7 @@ public class WalletServiceImpl implements WalletService{
 
     @Override
     public WalletTransferResponse transfer(WalletTransferRequest request) {
-        User user = UserService.getAuthenticatedUser();
+        User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
         // verify amount
         if (request.getAmount() <= 0) {
@@ -59,7 +59,8 @@ public class WalletServiceImpl implements WalletService{
         }
 
         // find recipient wallet
-        Wallet recipientWallet = walletRepository.findByNumber(request.getWalletNumber()).orElseThrow(RuntimeException::new);
+        Wallet recipientWallet = walletRepository.findByNumber(request.getWalletNumber())
+                .orElseThrow(() -> new BadRequestException("This account number does not exist or is invalid"));
 
         // create reference
         String reference = UUID.randomUUID().toString().replace("-", "");
@@ -105,7 +106,7 @@ public class WalletServiceImpl implements WalletService{
 
     @Override
     public List<WalletTransactionResponse> getAllTransactions() {
-        User user = UserService.getAuthenticatedUser();
+        User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
         List<Transaction> transactions = transactionRepository.findBySenderOrRecipient(user, user);
 
@@ -130,7 +131,7 @@ public class WalletServiceImpl implements WalletService{
 
     @Override
     public WalletDepositResponse deposit(int amount) {
-        User user = UserService.getAuthenticatedUser();
+        User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
         // generate reference
         String reference = UUID.randomUUID().toString().replace("-", "");
@@ -196,7 +197,7 @@ public class WalletServiceImpl implements WalletService{
             transactionRepository.save(transaction);
 
             // update wallet balance
-            String email = data.get("email").asText();
+            String email = data.get("customer").get("email").asText();
             User user = userRepository.findByEmail(email).orElseThrow();
             Wallet userWallet = user.getWallet();
 

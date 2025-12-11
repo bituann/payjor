@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +49,7 @@ public class TokenServiceImpl implements TokenService{
 
     @Override
     public CreateApiKeyResponse createApiKey(CreateApiKeyRequest request) {
-        User user = UserService.getAuthenticatedUser();
+        User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
         // check if number of active keys are more than 5
         if (user.getActiveKeys() >= 5) {
