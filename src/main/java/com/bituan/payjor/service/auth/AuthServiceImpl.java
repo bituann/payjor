@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
     private long generateAccountNumber() {
         long number = (long) (Math.random() * (9_999_999_999_999L - 1_000_000_000_000L + 1) + 1_000_000_000_000L);
 
-        while (!walletRepository.existsByNumber(number)) {
+        while (walletRepository.existsByNumber(number)) {
             number = (long) (Math.random() * (9_999_999_999_999L - 1_000_000_000_000L + 1) + 1_000_000_000_000L);
         }
 
