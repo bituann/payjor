@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +53,7 @@ public class TokenServiceImpl implements TokenService{
         User user = UserService.getAuthenticatedUser();
 
         // check if number of active keys are more than 5
-        if (user.getApiKeys().stream().filter(key -> key.getExpiresAt().isAfter(LocalDateTime.now())).count() >= 5) {
+        if (user.getActiveKeys() >= 5) {
             throw new IllegalStateException("Maximum 5 active API keys allowed");
         }
 
@@ -83,8 +84,8 @@ public class TokenServiceImpl implements TokenService{
                 .expiresAt(expiresAt)
                 .build();
 
-        user.getApiKeys().add(apiKey);
-        
+        apiKeyRepository.save(apiKey);
+
         user.setActiveKeys(user.getActiveKeys() + 1);
 
         userRepository.save(user);
