@@ -128,7 +128,7 @@ public class WalletServiceImpl implements WalletService{
         return transactions.stream().map(transaction -> WalletTransactionResponse.builder()
                 .reference(transaction.getReference())
                 .recipient(transaction.getRecipient().getWallet().getNumber())
-                .sender(transaction.getSender().getWallet().getNumber())
+                .sender(transaction.getSender() == null ? null : transaction.getSender().getWallet().getNumber())
                 .type(transaction.getType())
                 .amount(transaction.getAmount())
                 .status(transaction.getStatus().name())
@@ -147,6 +147,14 @@ public class WalletServiceImpl implements WalletService{
         if (paymentStatus.getData().getStatus().equalsIgnoreCase("success") || paymentStatus.getData().getStatus().equalsIgnoreCase("failed")) {
             transaction.setStatus(TransactionStatus.valueOf(paymentStatus.getData().getStatus().toUpperCase()));
             transactionRepository.save(transaction);
+
+            if (transaction.getType() == TransactionType.DEPOSIT) {
+                User user = transaction.getRecipient();
+                int currentBalance = user.getWallet().getBalance();
+                user.getWallet().setBalance(currentBalance + transaction.getAmount());
+
+                userRepository.save(user);
+            }
         }
 
         return WalletTransactionResponse.builder()
