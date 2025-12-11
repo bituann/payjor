@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -17,5 +18,9 @@ public class WalletTransactionResponse {
     private String reference;
     private TransactionType type;
     private double amount;
+    private String sender;
+    private String recipient;
     private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime completedAt;
 }

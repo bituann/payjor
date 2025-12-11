@@ -19,9 +19,7 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-
-    @Column(scale = 2)
-    private double balance;
+    private int balance;
 
     @Column(unique = true, length = 13)
     private String number;

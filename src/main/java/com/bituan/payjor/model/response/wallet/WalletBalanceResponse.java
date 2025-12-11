@@ -8,5 +8,6 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class WalletBalanceResponse {
+    private String accountNumber;
     private double balance;
 }

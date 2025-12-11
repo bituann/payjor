@@ -24,10 +24,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
@@ -59,11 +62,14 @@ public class WalletServiceImpl implements WalletService{
         }
 
         // find recipient wallet
-        Wallet recipientWallet = walletRepository.findByNumber(request.getWalletNumber())
+        Wallet recipientWallet = walletRepository.findByNumber(request.getRecipient())
                 .orElseThrow(() -> new BadRequestException("This account number does not exist or is invalid"));
 
+        // created at
+        LocalDateTime createdAt = LocalDateTime.now();
+
         // create reference
-        String reference = UUID.randomUUID().toString().replace("-", "");
+        String reference = "TXN" + createdAt.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + UUID.randomUUID().toString().replace("-", "");
 
         // create transaction
         Transaction transaction = Transaction.builder()
@@ -71,6 +77,7 @@ public class WalletServiceImpl implements WalletService{
                 .type(TransactionType.TRANSFER)
                 .sender(user)
                 .status(TransactionStatus.PENDING)
+                .createdAt(createdAt)
                 .amount(request.getAmount())
                 .reference(reference)
                 .build();
@@ -86,21 +93,29 @@ public class WalletServiceImpl implements WalletService{
 
         // update transaction status & save
         transaction.setStatus(TransactionStatus.SUCCESS);
+        transaction.setCompletedAt(LocalDateTime.now());
         transactionRepository.save(transaction);
 
 
         return WalletTransferResponse.builder()
+                .recipient(recipientWallet.getNumber())
+                .createdAt(transaction.getCreatedAt())
+                .completedAt(transaction.getCompletedAt())
                 .status(TransactionStatus.SUCCESS)
-                .message("Transfer completed")
+                .accountNumber(userWallet.getNumber())
+                .amount(transaction.getAmount())
                 .build();
     }
 
     @Override
     public WalletBalanceResponse getBalance() {
-        double balance = UserService.getAuthenticatedUser().getWallet().getBalance();
+        Wallet wallet = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail())
+                .orElseThrow()
+                .getWallet();
 
         return WalletBalanceResponse.builder()
-                .balance(balance)
+                .accountNumber(wallet.getNumber())
+                .balance((double) wallet.getBalance() / 100)
                 .build();
     }
 
@@ -111,9 +126,14 @@ public class WalletServiceImpl implements WalletService{
         List<Transaction> transactions = transactionRepository.findBySenderOrRecipient(user, user);
 
         return transactions.stream().map(transaction -> WalletTransactionResponse.builder()
+                .reference(transaction.getReference())
+                .recipient(transaction.getRecipient().getWallet().getNumber())
+                .sender(transaction.getSender().getWallet().getNumber())
                 .type(transaction.getType())
                 .amount(transaction.getAmount())
                 .status(transaction.getStatus().name())
+                .createdAt(transaction.getCreatedAt())
+                .completedAt(transaction.getCompletedAt())
                 .build()
         ).toList();
     }
@@ -122,10 +142,17 @@ public class WalletServiceImpl implements WalletService{
     public WalletTransactionResponse verifyDepositStatus(String reference) {
         VerifyPaymentResponse paymentStatus = payStackService.verifyPayment(reference);
 
+        Transaction transaction = transactionRepository.findByReference(reference).orElseThrow( () -> new BadRequestException("Invalid reference"));
+
+        if (paymentStatus.getData().getStatus().equalsIgnoreCase("success") || paymentStatus.getData().getStatus().equalsIgnoreCase("failed")) {
+            transaction.setStatus(TransactionStatus.valueOf(paymentStatus.getData().getStatus().toUpperCase()));
+            transactionRepository.save(transaction);
+        }
+
         return WalletTransactionResponse.builder()
                 .reference(reference)
-                .status(paymentStatus.getData().getStatus())
                 .amount(paymentStatus.getData().getAmount())
+                .status(paymentStatus.getData().getStatus())
                 .build();
     }
 
@@ -133,8 +160,12 @@ public class WalletServiceImpl implements WalletService{
     public WalletDepositResponse deposit(int amount) {
         User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
+        // created at
+        LocalDateTime createdAt = LocalDateTime.now();
+
         // generate reference
-        String reference = UUID.randomUUID().toString().replace("-", "");
+        String reference = "TXN" + createdAt.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + UUID.randomUUID().toString().replace("-", "");
+
 
         InitPaymentRequest request = InitPaymentRequest.builder()
                 .amount(amount)
@@ -147,6 +178,7 @@ public class WalletServiceImpl implements WalletService{
         // save pending transaction
         Transaction transaction = Transaction.builder()
                 .reference(paymentResponse.getData().getReference())
+                .createdAt(createdAt)
                 .sender(null)
                 .type(TransactionType.DEPOSIT)
                 .status(TransactionStatus.PENDING)
@@ -193,10 +225,13 @@ public class WalletServiceImpl implements WalletService{
             // Handle different event types (e.g., "charge.success", "transfer.success")
             if ("charge.failed".equalsIgnoreCase(eventType)) {
                 transaction.setStatus(TransactionStatus.FAILED);
+                transaction.setCompletedAt(LocalDateTime.now());
+                transactionRepository.save(transaction);
                 return false;
             }
 
             transaction.setStatus(TransactionStatus.SUCCESS);
+            transaction.setCompletedAt(LocalDateTime.now());
 
             transactionRepository.save(transaction);
 
@@ -206,7 +241,7 @@ public class WalletServiceImpl implements WalletService{
 
             Wallet userWallet = user.getWallet();
 
-            userWallet.setBalance(userWallet.getBalance() + data.get("amount").asDouble());
+            userWallet.setBalance(userWallet.getBalance() + data.get("amount").asInt());
 
             userRepository.save(user);
 

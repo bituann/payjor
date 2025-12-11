@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -38,4 +39,8 @@ public class Transaction {
     private TransactionType type;
 
     private TransactionStatus status;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime completedAt;
 }
