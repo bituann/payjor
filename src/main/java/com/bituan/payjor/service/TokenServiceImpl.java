@@ -56,7 +56,12 @@ public class TokenServiceImpl implements TokenService{
         User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
         // check if number of active keys are more than 5
-        if (user.getActiveKeys() >= 5) {
+        List<ApiKey> activeApiKeys = apiKeyRepository.findAllByOwner(user).stream()
+                .filter(apiKey -> apiKey
+                        .getExpiresAt()
+                        .isAfter(LocalDateTime.now())
+                ).toList();
+        if (activeApiKeys.size() >= 5) {
             throw new IllegalStateException("Maximum 5 active API keys allowed");
         }
 
