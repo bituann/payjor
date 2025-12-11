@@ -5,6 +5,7 @@ import com.bituan.payjor.model.entity.User;
 import com.bituan.payjor.model.entity.Wallet;
 import com.bituan.payjor.model.response.auth.AuthResponse;
 import com.bituan.payjor.repository.UserRepository;
+import com.bituan.payjor.repository.WalletRepository;
 import com.bituan.payjor.service.TokenService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -35,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenService tokenService;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final WebClient webClient = WebClient.create();
+    private final WalletRepository walletRepository;
 
     @Value("${GOOGLE_CLIENT_ID}")
     private String googleClientId;
@@ -122,12 +124,22 @@ public class AuthServiceImpl implements AuthService {
                 .wallet(
                         Wallet.builder()
                                 .balance(0)
-                                .number(String.valueOf((long) (Math.random() * (9_999_999_999_999L - 1_000_000_000_000L + 1) + 1_000_000_000_000L)))
+                                .number(generateAccountNumber())
                                 .build()
                 )
                 .build();
         user.getWallet().setOwner(user);
 
         return user;
+    }
+
+    private long generateAccountNumber() {
+        long number = (long) (Math.random() * (9_999_999_999_999L - 1_000_000_000_000L + 1) + 1_000_000_000_000L);
+
+        while (!walletRepository.existsByNumber(number)) {
+            number = (long) (Math.random() * (9_999_999_999_999L - 1_000_000_000_000L + 1) + 1_000_000_000_000L);
+        }
+
+        return number;
     }
 }
