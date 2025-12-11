@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class WalletTransferResponse {
-    private String accountNumber;
-    private String recipient;
+    private long accountNumber;
+    private long recipient;
     private double amount;
     private TransactionStatus status;
     private LocalDateTime createdAt;

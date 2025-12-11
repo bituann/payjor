@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WalletTransferRequest {
-    private String recipient;
+    private long recipient;
     private int amount;
 }

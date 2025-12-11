@@ -51,6 +51,14 @@ public class WalletServiceImpl implements WalletService{
     public WalletTransferResponse transfer(WalletTransferRequest request) {
         User user = userRepository.findByEmail(UserService.getAuthenticatedUser().getEmail()).orElseThrow();
 
+        // find recipient wallet & prevent self transfer
+        Wallet recipientWallet = walletRepository.findByNumber(request.getRecipient())
+                .orElseThrow(() -> new BadRequestException("This account number does not exist or is invalid"));
+
+        if (recipientWallet.getNumber() == user.getWallet().getNumber()) {
+            throw new BadRequestException("You cannot make a transfer to yourself");
+        }
+
         // verify amount
         if (request.getAmount() <= 0) {
             throw new BadRequestException("Invalid amount");
@@ -60,10 +68,6 @@ public class WalletServiceImpl implements WalletService{
         if (user.getWallet().getBalance() < request.getAmount()) {
             throw new InsufficientBalanceException("Insufficient Balance");
         }
-
-        // find recipient wallet
-        Wallet recipientWallet = walletRepository.findByNumber(request.getRecipient())
-                .orElseThrow(() -> new BadRequestException("This account number does not exist or is invalid"));
 
         // created at
         LocalDateTime createdAt = LocalDateTime.now();

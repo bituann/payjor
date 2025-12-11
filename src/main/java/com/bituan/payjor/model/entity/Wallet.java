@@ -22,7 +22,7 @@ public class Wallet {
     private int balance;
 
     @Column(unique = true, length = 13)
-    private String number;
+    private long number;
 
     @OneToOne(mappedBy = "wallet")
     private User owner;
