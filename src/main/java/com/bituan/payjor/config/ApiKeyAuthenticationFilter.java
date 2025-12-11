@@ -32,31 +32,31 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
         String apiKeyHeader = request.getHeader("X-API-KEY");
 
-        if (apiKeyHeader != null) {
-            Optional<ApiKey> matchedKey = apiKeyRepository.findByKey(passwordEncoder.encode(apiKeyHeader));
+        if(apiKeyHeader == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            if (matchedKey.isPresent()) {
-                ApiKey apiKey = matchedKey.get();
+        Optional<ApiKey> matchedKey = apiKeyRepository.findByKey(passwordEncoder.encode(apiKeyHeader));
 
-                CustomUserDetails userDetails = new CustomUserDetails(apiKey.getOwner());
+        if (matchedKey.isPresent()) {
+            ApiKey apiKey = matchedKey.get();
 
-                // Build Authentication object
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                apiKey.getPermissions().stream()
-                                        .map(permission -> new SimpleGrantedAuthority("ROLE_" + permission.name()))
-                                        .toList()
-                        );
+            CustomUserDetails userDetails = new CustomUserDetails(apiKey.getOwner());
 
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            // Build Authentication object
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            apiKey.getPermissions().stream()
+                                    .map(permission -> new SimpleGrantedAuthority("ROLE_" + permission.name()))
+                                    .toList()
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);
