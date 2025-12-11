@@ -3,6 +3,7 @@ package com.bituan.payjor.service;
 import com.bituan.payjor.exception.BadRequestException;
 import com.bituan.payjor.model.entity.ApiKey;
 import com.bituan.payjor.model.entity.User;
+import com.bituan.payjor.model.enums.Permission;
 import com.bituan.payjor.model.request.CreateApiKeyRequest;
 import com.bituan.payjor.model.request.RollOverApiKeyRequest;
 import com.bituan.payjor.model.response.apikey.CreateApiKeyResponse;
@@ -20,7 +21,10 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,8 +60,24 @@ public class TokenServiceImpl implements TokenService{
             throw new IllegalStateException("Maximum 5 active API keys allowed");
         }
 
+        // handle permissions
         if (request.getPermissions().isEmpty()) {
             throw new BadRequestException("Permissions must be set");
+        }
+
+        List<Permission> permissions = new ArrayList<>();
+
+        try {
+            permissions = request.getPermissions().stream().map(Permission::valueOf).toList();
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid permission");
+        }
+
+        // handle expiry
+        List<String> expirySplit = Arrays.stream(request.getExpiry().split("")).toList();
+
+        if(request.getExpiry() == null || expirySplit.size() != 2 || !List.of("H", "M", "D", "Y").contains(expirySplit.get(1))) {
+            throw new BadRequestException("Invalid expiry set");
         }
 
         // Generate random 32-byte key
@@ -78,7 +98,7 @@ public class TokenServiceImpl implements TokenService{
                 .name(request.getName())
                 .key(hashedKey)
                 .owner(user)
-                .permissions(request.getPermissions())
+                .permissions(permissions)
                 .createdAt(createdAt)
                 .expiresAt(expiresAt)
                 .build();
@@ -106,7 +126,7 @@ public class TokenServiceImpl implements TokenService{
 
         CreateApiKeyRequest req = CreateApiKeyRequest.builder()
                 .name(apiKey.getName())
-                .permissions(apiKey.getPermissions())
+                .permissions(apiKey.getPermissions().stream().map(Enum::name).toList())
                 .expiry(request.getExpiry())
                 .build();
 
