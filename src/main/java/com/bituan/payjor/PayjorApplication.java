@@ -40,6 +40,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER
 )
+@SecurityScheme(
+        name = "ApiKeyAuth",
+        type = SecuritySchemeType.APIKEY,
+        in = SecuritySchemeIn.HEADER,
+        paramName = "X-API-KEY"
+)
 
 @SpringBootApplication
 @EnableConfigurationProperties(RsaKeyProperties.class)
