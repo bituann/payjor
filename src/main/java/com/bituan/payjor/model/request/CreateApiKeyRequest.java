@@ -14,6 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateApiKeyRequest {
     private String name;
-    private List<Permission> permissions;
+    private List<String> permissions;
     private String expiry;
 }
